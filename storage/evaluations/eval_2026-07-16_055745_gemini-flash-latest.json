@@ -1,0 +1,42 @@
+{
+  "eval_id": "602346ce24aa4f8c8e0777d28d8292b9",
+  "run_id": "0d41c770fa444ff28e922f644d3b2685",
+  "judge_model": "gemini-flash-latest",
+  "schema_version": "1.0",
+  "evaluations": [
+    {
+      "input_id": 1784189256630,
+      "scores": [
+        {
+          "field": "tipo_solicitacao",
+          "score": 10,
+          "reasoning": "A categoria 'atualizacao_cadastral' é perfeitamente exata e inequívoca para a solicitação do cliente."
+        },
+        {
+          "field": "entidades",
+          "score": 10,
+          "reasoning": "A empresa 'Beta Transportes' foi extraída corretamente. Não há CNPJ ou documentos mencionados no texto original, e o classificador corretamente os identificou como nulos/vazios."
+        },
+        {
+          "field": "proxima_acao",
+          "score": 10,
+          "reasoning": "A ação 'encaminhar_operacoes' é adequada para dar andamento ao processo de atualização cadastral interna."
+        },
+        {
+          "field": "confianca",
+          "score": 10,
+          "reasoning": "A confiança 'alto' está perfeitamente calibrada, dado que a mensagem é extremamente clara e direta."
+        },
+        {
+          "field": "justificativa",
+          "score": 10,
+          "reasoning": "A justificativa é clara, concisa e resume perfeitamente os pontos principais da mensagem que motivaram a classificação."
+        }
+      ],
+      "overall_score": 10.0,
+      "critical_errors": [],
+      "judge_confidence": "alto"
+    }
+  ],
+  "timestamp": "2026-07-16T05:57:45.959744"
+}

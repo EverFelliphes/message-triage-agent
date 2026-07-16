@@ -1,0 +1,46 @@
+{
+  "run_id": "0d41c770fa444ff28e922f644d3b2685",
+  "schema_version": "1.0",
+  "metadata": {
+    "timestamp": "2026-07-16T05:08:30.854685",
+    "model": "gemini-flash-latest",
+    "provider": "gemini",
+    "prompt_version": "v1",
+    "total_inputs": 1,
+    "total_success": 1,
+    "total_fallback": 0
+  },
+  "results": [
+    {
+      "input": {
+        "id": 1784189256630,
+        "assunto": "Atualização cadastral",
+        "mensagem": "Bom dia, precisamos atualizar os dados cadastrais da empresa Beta Transportes. Houve alteração no endereço e no quadro societário"
+      },
+      "output": {
+        "id": 1784189256630,
+        "tipo_solicitacao": "atualizacao_cadastral",
+        "empresa": "Beta Transportes",
+        "cnpj": null,
+        "documentos_identificados": [],
+        "data_mencionada": null,
+        "area_sugerida": "cadastro",
+        "proxima_acao": "encaminhar_operacoes",
+        "confianca": "alto",
+        "urgencia": "baixa",
+        "justificativa": "O cliente solicita explicitamente a atualização dos dados cadastrais da empresa Beta Transportes devido a alterações de endereço e quadro societário.",
+        "metadata": {
+          "trace_id": "18c2acac11984ffbb2da17561d878275",
+          "provider": "gemini",
+          "model_name": "gemini-flash-latest",
+          "latency_ms": 54203,
+          "retry_count": 1,
+          "prompt_version": "v1",
+          "fallback": false
+        }
+      },
+      "latency_ms": 54203,
+      "retry_count": 1
+    }
+  ]
+}

@@ -1,0 +1,48 @@
+{
+  "run_id": "4c436e8e5bc947eb973610e26fa47fc1",
+  "schema_version": "1.0",
+  "metadata": {
+    "timestamp": "2026-07-16T05:10:41.380092",
+    "model": "gemini-flash-latest",
+    "provider": "gemini",
+    "prompt_version": "v1",
+    "total_inputs": 1,
+    "total_success": 1,
+    "total_fallback": 0
+  },
+  "results": [
+    {
+      "input": {
+        "id": 1784189406957,
+        "assunto": "Segunda via",
+        "mensagem": "Boa tarde, poderiam enviar novamente a segunda via do documento referente à nossa operação? Não localizamos o arquivo anterior."
+      },
+      "output": {
+        "id": 1784189406957,
+        "tipo_solicitacao": "solicitacao_de_segunda_via",
+        "empresa": null,
+        "cnpj": null,
+        "documentos_identificados": [
+          "documento"
+        ],
+        "data_mencionada": null,
+        "area_sugerida": "atendimento",
+        "proxima_acao": "encaminhar_operacoes",
+        "confianca": "alto",
+        "urgencia": "media",
+        "justificativa": "O cliente solicita explicitamente o reenvio da segunda via de um documento referente à operação ('poderiam enviar novamente a segunda via do documento').",
+        "metadata": {
+          "trace_id": "864944cdd46c4066abc38ec5fed99cd0",
+          "provider": "gemini",
+          "model_name": "gemini-flash-latest",
+          "latency_ms": 34400,
+          "retry_count": 1,
+          "prompt_version": "v1",
+          "fallback": false
+        }
+      },
+      "latency_ms": 34400,
+      "retry_count": 1
+    }
+  ]
+}

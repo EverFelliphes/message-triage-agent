@@ -1,0 +1,52 @@
+[
+  {
+    "id": 1,
+    "assunto": "Interesse em crédito",
+    "mensagem": "Bom dia, a Transportadora Rocha Ltda (CNPJ 45.723.174/0001-10) gostaria de saber sobre linhas de capital de giro para expandir a frota."
+  },
+  {
+    "id": 2,
+    "assunto": "Atualização cadastral",
+    "mensagem": "Prezados, mudamos a sede da empresa e precisamos atualizar o endereço no cadastro. O novo endereço é Rua das Palmeiras, 200."
+  },
+  {
+    "id": 3,
+    "assunto": "Documentos",
+    "mensagem": "Conforme solicitado, segue em anexo o balanço patrimonial e o cartão CNPJ para dar andamento ao processo."
+  },
+  {
+    "id": 4,
+    "assunto": "Segunda via",
+    "mensagem": "Preciso da segunda via do boleto com vencimento em 10/08/2026, pois não recebi por e-mail."
+  },
+  {
+    "id": 5,
+    "assunto": "Dúvida",
+    "mensagem": "Gostaria de entender como é calculado o IOF na antecipação de recebíveis que contratei mês passado."
+  },
+  {
+    "id": 6,
+    "assunto": "Pendência",
+    "mensagem": "Ainda estamos aguardando o comprovante de faturamento de vocês para concluir a análise. Sem ele não conseguimos seguir."
+  },
+  {
+    "id": 7,
+    "assunto": "Contato",
+    "mensagem": "Oi, vocês patrocinam eventos esportivos? Queria falar sobre uma parceria para um campeonato de futebol amador."
+  },
+  {
+    "id": 8,
+    "assunto": "Urgente - crédito",
+    "mensagem": "URGENTE! Precisamos de uma resposta ainda hoje sobre o financiamento da Metalúrgica Sol, cnpj 11.444.777/0001-61, o prazo é apertado."
+  },
+  {
+    "id": 9,
+    "assunto": "Vários",
+    "mensagem": "Segue o contrato social da Padaria Aurora (04.252.011/0001-10). Também temos interesse em crédito para a filial. Documentos de 01/07/2026 e 05/07/2026."
+  },
+  {
+    "id": 10,
+    "assunto": null,
+    "mensagem": "blz, mandei os docs ontem pelo app, qq coisa me chama. abs"
+  }
+]

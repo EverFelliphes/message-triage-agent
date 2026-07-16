@@ -1,0 +1,42 @@
+{
+  "eval_id": "a927f695df094a3f98413467fc2d208a",
+  "run_id": "f3b5f9e8b748434dbc9b50bbec4fc9ea",
+  "judge_model": "gemini-flash-latest",
+  "schema_version": "1.0",
+  "evaluations": [
+    {
+      "input_id": 1784189005972,
+      "scores": [
+        {
+          "field": "tipo_solicitacao",
+          "score": 10,
+          "reasoning": "A categoria 'interesse_em_credito_pj' é perfeitamente adequada para a mensagem, que solicita explicitamente opções de crédito para capital de giro."
+        },
+        {
+          "field": "entidades",
+          "score": 10,
+          "reasoning": "A empresa 'Alfa Comércio LTDA' e o CNPJ '12.345.678/0001-99' foram extraídos com total exatidão. Não houve alucinação de documentos."
+        },
+        {
+          "field": "proxima_acao",
+          "score": 10,
+          "reasoning": "A ação 'encaminhar_comercial' é a rota operacional correta e lógica para tratar um lead interessado em novos produtos de crédito."
+        },
+        {
+          "field": "confianca",
+          "score": 10,
+          "reasoning": "A confiança foi definida como 'alto', o que é totalmente condizente com uma mensagem clara, direta e sem ambiguidades."
+        },
+        {
+          "field": "justificativa",
+          "score": 10,
+          "reasoning": "A justificativa é clara, coerente e cita diretamente os elementos centrais da mensagem (nome da empresa e o objetivo do contato)."
+        }
+      ],
+      "overall_score": 10.0,
+      "critical_errors": [],
+      "judge_confidence": "alto"
+    }
+  ],
+  "timestamp": "2026-07-16T05:57:21.124818"
+}

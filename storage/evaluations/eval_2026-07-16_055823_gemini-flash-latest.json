@@ -1,0 +1,42 @@
+{
+  "eval_id": "9309180e17184742ae89cffc0670079a",
+  "run_id": "ebfe7f38c85d4b04ad88172430cedc59",
+  "judge_model": "gemini-flash-latest",
+  "schema_version": "1.0",
+  "evaluations": [
+    {
+      "input_id": 1784189348248,
+      "scores": [
+        {
+          "field": "tipo_solicitacao",
+          "score": 10,
+          "reasoning": "A categoria 'envio_de_documentacao' está perfeitamente alinhada com a intenção do cliente de enviar o contrato social para análise."
+        },
+        {
+          "field": "entidades",
+          "score": 10,
+          "reasoning": "A empresa 'Gama Serviços' e o documento 'contrato social' foram extraídos corretamente. O CNPJ foi corretamente identificado como nulo, pois não consta na mensagem."
+        },
+        {
+          "field": "proxima_acao",
+          "score": 10,
+          "reasoning": "A ação de encaminhar para a área de operações é totalmente adequada para o tratamento de análise de documentos enviados."
+        },
+        {
+          "field": "confianca",
+          "score": 10,
+          "reasoning": "A confiança foi definida como 'alto', o que é correto dada a clareza e simplicidade da mensagem original."
+        },
+        {
+          "field": "justificativa",
+          "score": 10,
+          "reasoning": "A justificativa resume com precisão o conteúdo da mensagem e sustenta a classificação de forma clara."
+        }
+      ],
+      "overall_score": 10.0,
+      "critical_errors": [],
+      "judge_confidence": "alto"
+    }
+  ],
+  "timestamp": "2026-07-16T05:58:23.176637"
+}

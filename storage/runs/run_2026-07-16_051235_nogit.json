@@ -1,0 +1,46 @@
+{
+  "run_id": "8a5443ae994045ef8ac7d6cb54bbb24e",
+  "schema_version": "1.0",
+  "metadata": {
+    "timestamp": "2026-07-16T05:12:35.242781",
+    "model": "gemini-flash-latest",
+    "provider": "gemini",
+    "prompt_version": "v1",
+    "total_inputs": 1,
+    "total_success": 1,
+    "total_fallback": 0
+  },
+  "results": [
+    {
+      "input": {
+        "id": 1784189540235,
+        "assunto": "Suporte técnico",
+        "mensagem": "Vocês fazem manutenção de notebook? Estou procurando assistência técnica"
+      },
+      "output": {
+        "id": 1784189540235,
+        "tipo_solicitacao": "fora_do_escopo",
+        "empresa": null,
+        "cnpj": null,
+        "documentos_identificados": [],
+        "data_mencionada": null,
+        "area_sugerida": "nao_aplicavel",
+        "proxima_acao": "marcar_como_fora_do_escopo",
+        "confianca": "alto",
+        "urgencia": "baixa",
+        "justificativa": "A mensagem solicita manutenção de notebook, o que não possui relação com os serviços financeiros PJ da instituição.",
+        "metadata": {
+          "trace_id": "bc0c34d63fa6478ab7d96bc295d81f19",
+          "provider": "gemini",
+          "model_name": "gemini-flash-latest",
+          "latency_ms": 14983,
+          "retry_count": 0,
+          "prompt_version": "v1",
+          "fallback": false
+        }
+      },
+      "latency_ms": 14983,
+      "retry_count": 0
+    }
+  ]
+}

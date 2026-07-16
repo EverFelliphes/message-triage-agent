@@ -1,0 +1,48 @@
+{
+  "run_id": "ebfe7f38c85d4b04ad88172430cedc59",
+  "schema_version": "1.0",
+  "metadata": {
+    "timestamp": "2026-07-16T05:09:28.766468",
+    "model": "gemini-flash-latest",
+    "provider": "gemini",
+    "prompt_version": "v1",
+    "total_inputs": 1,
+    "total_success": 1,
+    "total_fallback": 0
+  },
+  "results": [
+    {
+      "input": {
+        "id": 1784189348248,
+        "assunto": "Documentação pendente",
+        "mensagem": "Prezados, segue o contrato social atualizado da Gama Serviços para continuidade da análise."
+      },
+      "output": {
+        "id": 1784189348248,
+        "tipo_solicitacao": "envio_de_documentacao",
+        "empresa": "Gama Serviços",
+        "cnpj": null,
+        "documentos_identificados": [
+          "contrato social"
+        ],
+        "data_mencionada": null,
+        "area_sugerida": "operacoes",
+        "proxima_acao": "encaminhar_operacoes",
+        "confianca": "alto",
+        "urgencia": "baixa",
+        "justificativa": "O cliente informa o envio do contrato social atualizado da empresa Gama Serviços para dar continuidade à análise.",
+        "metadata": {
+          "trace_id": "9787afd16b6e41afb2225561bec3cf5a",
+          "provider": "gemini",
+          "model_name": "gemini-flash-latest",
+          "latency_ms": 20492,
+          "retry_count": 0,
+          "prompt_version": "v1",
+          "fallback": false
+        }
+      },
+      "latency_ms": 20492,
+      "retry_count": 0
+    }
+  ]
+}

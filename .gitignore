@@ -1,0 +1,52 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.eggs/
+build/
+dist/
+.venv/
+venv/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+coverage.xml
+htmlcov/
+
+# Node
+node_modules/
+frontend/dist/
+frontend/.vite/
+npm-debug.log*
+
+# Env / secrets
+.env
+.env.local
+*.local
+!.env.example
+
+# IDE / OS
+.vscode/
+.idea/
+*.swp
+.DS_Store
+Thumbs.db
+
+# Storage artifacts (allow committing JSONs and MDs, ignore logs and other files)
+storage/runs/*
+!storage/runs/*.json
+storage/evaluations/*
+!storage/evaluations/*.json
+storage/reports/individual/*
+!storage/reports/individual/*.json
+!storage/reports/individual/*.md
+storage/reports/aggregate/*
+!storage/reports/aggregate/*.json
+!storage/reports/aggregate/*.md
+storage/logs/*
+!storage/**/.gitkeep
+
+
+specs/
+.claude/
