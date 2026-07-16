@@ -28,20 +28,18 @@ flowchart LR
 
 O projeto está organizado nos seguintes diretórios principais:
 
-*   [**`backend/`**](file:///c:/Users/everf/OneDrive/Documentos/GitHub-2/message-triage-agent/backend): Contém a API FastAPI, o classificador principal, os extratores determinísticos e o pipeline de avaliação.
-    *   [`src/triage/classifier.py`](file:///c:/Users/everf/OneDrive/Documentos/GitHub-2/message-triage-agent/backend/src/triage/classifier.py): Orquestrador que mescla regras de negócio e LLM.
-    *   [`src/triage/providers.py`](file:///c:/Users/everf/OneDrive/Documentos/GitHub-2/message-triage-agent/backend/src/triage/providers.py): Camada de adaptadores para APIs de LLM (Anthropic, Gemini, OpenAI) com resiliência de rede.
-    *   [`src/triage/extractors.py`](file:///c:/Users/everf/OneDrive/Documentos/GitHub-2/message-triage-agent/backend/src/triage/extractors.py): Funções determinísticas para CNPJ, datas e urgência.
-    *   [`evaluation/judge.py`](file:///c:/Users/everf/OneDrive/Documentos/GitHub-2/message-triage-agent/backend/evaluation/judge.py): Avaliador offline que executa a rubrica em cada classificação histórica.
-*   [**`frontend/`**](file:///c:/Users/everf/OneDrive/Documentos/GitHub-2/message-triage-agent/frontend): Dashboard analítico e interface visual desenvolvidos em React + Vite.
-*   [**`storage/`**](file:///c:/Users/everf/OneDrive/Documentos/GitHub-2/message-triage-agent/storage): Banco de dados em arquivos (JSON versionados) contendo o histórico de classificações (`runs/`), avaliações do juiz (`evaluations/`) e relatórios analíticos gerados (`reports/`).
-*   [**`docs/`**](file:///c:/Users/everf/OneDrive/Documentos/GitHub-2/message-triage-agent/docs): Documentações detalhadas de engenharia:
-    *   [`architecture.md`](file:///c:/Users/everf/OneDrive/Documentos/GitHub-2/message-triage-agent/docs/architecture.md): Princípios de design, LGPD e modularidade.
-    *   [`prompt_engineering.md`](file:///c:/Users/everf/OneDrive/Documentos/GitHub-2/message-triage-agent/docs/prompt_engineering.md): Detalhes da taxonomia, few-shots e restrições de formato do LLM.
-    *   [`evaluation.md`](file:///c:/Users/everf/OneDrive/Documentos/GitHub-2/message-triage-agent/docs/evaluation.md): Critérios da rubrica de qualidade e metodologia do LLM-as-a-Judge.
-*   [**`specs/`**](file:///c:/Users/everf/OneDrive/Documentos/GitHub-2/message-triage-agent/specs): Especificações de requisitos e planejamento do projeto:
-    *   [`overview.md`](file:///c:/Users/everf/OneDrive/Documentos/GitHub-2/message-triage-agent/specs/overview.md): Escopo e visão geral da triagem automatizada.
-    *   [`planning.md`](file:///c:/Users/everf/OneDrive/Documentos/GitHub-2/message-triage-agent/specs/planning.md): Cronograma e fases de entrega de cada módulo.
+*   [**`backend/`**](backend): Contém a API FastAPI, o classificador principal, os extratores determinísticos e o pipeline de avaliação.
+    *   [`src/triage/classifier.py`](backend/src/triage/classifier.py): Orquestrador que mescla regras de negócio e LLM.
+    *   [`src/triage/providers.py`](backend/src/triage/providers.py): Camada de adaptadores para APIs de LLM (Anthropic, Gemini, OpenAI) com resiliência de rede.
+    *   [`src/triage/extractors.py`](backend/src/triage/extractors.py): Funções determinísticas para CNPJ, datas e urgência.
+    *   [`evaluation/judge.py`](backend/evaluation/judge.py): Avaliador offline que executa a rubrica em cada classificação histórica.
+*   [**`frontend/`**](frontend): Dashboard analítico e interface visual desenvolvidos em React + Vite.
+*   [**`storage/`**](storage): Banco de dados em arquivos (JSON versionados) contendo o histórico de classificações (`runs/`), avaliações do juiz (`evaluations/`) e relatórios analíticos gerados (`reports/`).
+*   [**`docs/`**](docs): Documentações detalhadas de engenharia:
+    *   [`architecture.md`](docs/architecture.md): Princípios de design, LGPD e modularidade.
+    *   [`prompt_engineering.md`](docs/prompt_engineering.md): Detalhes da taxonomia, few-shots e restrições de formato do LLM.
+    *   [`evaluation.md`](docs/evaluation.md): Critérios da rubrica de qualidade e metodologia do LLM-as-a-Judge.
+    *   [`processo_desenvolvimento_ia.md`](docs/processo_desenvolvimento_ia.md): Explicação do desenvolvimento colaborativo com IA, referências literárias e otimizações.
 
 ---
 
@@ -162,4 +160,4 @@ Se quiser simular um lote de mensagens, classificá-las e rodar a avaliação of
 
 ## ⚖️ Licença
 
-Este projeto está licenciado sob a licença MIT — consulte o arquivo [`LICENSE`](file:///c:/Users/everf/OneDrive/Documentos/GitHub-2/message-triage-agent/LICENSE) para obter detalhes.
+Este projeto está licenciado sob a licença MIT — consulte o arquivo [`LICENSE`](LICENSE) para obter detalhes.
