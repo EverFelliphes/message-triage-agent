@@ -1,40 +1,48 @@
-# Evaluation
+# Avaliação (Evaluation)
 
-## What's implemented vs. roadmap
+## O que está Implementado vs. Roadmap
 
-**Implemented:** offline cross-family LLM-as-a-Judge, a weighted rubric, versioned evaluation artifacts, cross-run aggregation (score trend, per-category scores, calibration matrix, latency percentiles, fallback/retry rates, regression detection), Markdown reports, and a live dashboard.
+*   **Implementado:** Avaliador offline cruzado (LLM-as-a-Judge), rubrica de qualidade com pesos específicos, persistência de avaliações em arquivos estruturados e versionados, agregação agregada de runs históricas (tendência de score, scores por categoria, matriz de calibração, percentis de latência, taxas de fallback/retentativa, detecção de regressão), relatórios analíticos em Markdown e dashboard visual.
+*   **Roadmap:** Rota de revisão com participação humana (human-in-the-loop), conjunto de validação padrão-ouro (gold set base), monitoramento de produção com detecção de desvio (drift) e verificações de regressão automatizadas em esteiras de CI.
 
-**Roadmap:** human-in-the-loop labeling, a ground-truth gold set, production monitoring with drift detection, and automated CI regression checks.
+---
 
-## Methodology
+## Metodologia
 
-- **Cross-family judge** (Zheng et al. 2023) — Claude classifies; **GPT-4 or Gemini** evaluates. Cross-family is a deliberate choice to mitigate **self-preference bias** (a model rating its own family higher). The judge reuses the same `LLMProvider` adapters as the classifier. `judge_provider` can be pinned; left unset, it auto-selects a cross-family provider whose key is present (openai → gemini). If only the classifier's family is available it falls back same-family and logs a warning that the mitigation is lost.
-- **Weighted rubric** ([`rubric.py`](../backend/evaluation/rubric.py)) — per-field Likert (1–5) with weights summing to 1.0: `tipo_solicitacao` 0.30, `entidades` 0.25, `proxima_acao` 0.20, `confianca` 0.15 (calibration), `justificativa` 0.10. CoT is *enabled* for the judge because scoring is reasoning-heavy.
-- **Versioned artifacts** — every run and evaluation is a JSON file with `schema_version`, joinable by `run_id`/`input_id`.
-- **Aggregation & regression** ([`aggregator.py`](../backend/evaluation/aggregator.py)) — pure functions over the artifacts; `detect_regression` flags a mean-score drop beyond a threshold vs. the historical baseline.
-- **Asynchronous Execution & Polling** — the evaluation runner is offloaded to FastAPI `BackgroundTasks` to process larger runs without causing HTTP gateway timeouts. The frontend performs progress polling and displays a progress bar.
+*   **Avaliador Cruzado entre Famílias (LLM-as-a-Judge):** (Zheng et al. 2023) — Se o Claude classifica, utilizamos o **GPT-4 ou Gemini** para avaliar. Esta é uma escolha de design intencional para mitigar o **viés de preferência própria** (self-preference bias), onde uma família de modelos tende a dar pontuações maiores para si mesma. O avaliador reutiliza a mesma abstração `LLMProvider`. Se a chave do provedor cruzado não estiver configurada, o sistema gera um alerta de aviso informando que a mitigação de viés foi perdida.
+*   **Rubrica de Pontuação Ponderada:** ([`rubric.py`](../backend/evaluation/rubric.py)) — Escala Likert de 1 a 10 por campo avaliado, com pesos que somam 1.0: `tipo_solicitacao` (peso 0.30), `entidades` (peso 0.25), `proxima_acao` (peso 0.20), `confianca` (peso 0.15) e `justificativa` (peso 0.10). O Chain-of-Thought (CoT) está habilitado no avaliador para permitir análises e justificativas ricas antes de emitir a nota.
+*   **Artefatos Versionados:** Cada classificação de teste (run) e cada avaliação (evaluation) correspondente gera um arquivo JSON portando a assinatura do esquema (`schema_version`), unificáveis por chaves compostas de `run_id` e `input_id`.
+*   **Agregação e Detecção de Regressão:** ([`aggregator.py`](../backend/evaluation/aggregator.py)) — Funções puras aplicadas sobre os JSONs em disco. O método `detect_regression` sinaliza se a média de um run recente caiu abaixo de um limite de tolerância configurável em relação à base de referência histórica.
+*   **Execução Assíncrona e Polling:** O pipeline do avaliador é executado em segundo plano usando `BackgroundTasks` do FastAPI para suportar a avaliação de múltiplos runs sem causar estouro de tempo limite (timeout) do servidor. O progresso é enviado ao frontend React em tempo real por meio de polling e exibido em formato de barra de progresso.
 
-## Known limitations of LLM-as-a-Judge
+---
 
-- **No ground truth.** The score is one model's judgment of another's, not accuracy. This is the single biggest caveat; the gold set on the roadmap addresses it directly.
-- **Positional / verbosity bias** — judges can favor longer or first-presented answers.
-- **Self-preference bias** — mitigated by cross-family, not eliminated.
-- **Small-N.** Over a handful of runs, metrics like p95 latency, regression detection, and per-version performance are *indicative infrastructure*, not statistically robust signal. They exist for when volume arrives.
+## Limitações Conhecidas do LLM-as-a-Judge
 
-## Failure-mode analysis
+*   **Ausência de Gabarito Real (Ground Truth):** A pontuação emitida é a opinião de um modelo de IA sobre o desempenho de outro, não a acurácia real. Este é o principal motivo pelo qual a criação de um Gold Set rotulado por humanos é prioridade no roadmap.
+*   **Viés de Posição / Verbosidade:** Modelos de avaliação podem favorecer respostas mais longas ou que aparecem primeiro no contexto.
+*   **Viés de Preferência Própria:** Mitigado através do uso de provedores cruzados, porém não eliminado por completo.
+*   **Amostragem Reduzida (Small-N):** Métricas como percentis de latência e detecção de regressão em pequenos lotes são apenas *indicativas*, ganhando relevância estatística real apenas com o aumento contínuo do volume de avaliações.
 
-Two views surface systematic issues without ground truth:
+---
 
-- **Calibration matrix** — classifier confidence (rows) × judge score bucket (columns). Off-diagonal mass means the model's self-reported confidence is unreliable — important because the "low confidence → manual review" safeguard depends on it.
-- **Per-category error rates** — `critical_error_count_per_category` and `per_category_mean_score` localize where the taxonomy breaks down (usually the ambiguous pairs), pointing directly at which few-shot examples to revise.
+## Análise de Modos de Falha (Failure-Mode Analysis)
 
-## Roadmap triggers
+Duas visões principais no painel ajudam a identificar falhas sistemáticas sem necessidade de gabarito humano:
+*   **Matriz de Calibração:** Cruza a confiança autodeclarada do classificador (linhas) com os intervalos de nota do juiz (colunas). Concentrações fora da diagonal indicam que a auto-avaliação do modelo é pouco confiável, o que é crítico, pois a regra de desvio automático para "análise manual" depende desse indicador.
+*   **Taxa de Erros por Categoria:** Os valores de contagem de erros críticos e pontuação média por categoria de taxonomia revelam onde o modelo se confunde (ex.: classes parecidas ou ambíguas), ajudando a identificar quais exemplos few-shot de prompts precisam de refinamento.
 
-- **Human-in-the-loop:** sample 5–10% of traffic into a feedback UI.
-- **Gold set → RA-ICL:** accumulate ~500–1000 reviewed classifications, then retrieve nearest labeled examples per query.
-- **Production dashboards:** drift detection on category distribution and score.
-- **CI regression checks:** fail a build when `detect_regression` fires against the stored baseline.
+---
 
-## References
+## Gatilhos do Roadmap
 
-Zheng et al. 2023; Khrapunova 2025 — see the [root README](../README.md#references).
+*   **Revisão Humana:** Amostrar periodicamente de 5% a 10% do tráfego produtivo e enviá-lo a uma fila de conferência.
+*   **Gold Set e Busca Semântica:** Reunir uma base de 500 a 1000 amostras revisadas por especialistas para habilitar Retrieval-Augmented In-Context Learning (RA-ICL).
+*   **Monitoramento em Produção:** Painéis medindo desvios semânticos (data drift) e variações graduais de pontuação.
+*   **Esteiras de CI Integradas:** Interromper construções de build automáticas caso o executor offline `detect_regression` acuse quedas de nota sistemáticas em relação à baseline.
+
+---
+
+## Referências
+
+Zheng et al. 2023; Khrapunova 2025 — consulte o [`README.md`](../README.md#referencias) na raiz.

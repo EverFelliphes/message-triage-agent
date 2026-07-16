@@ -1,80 +1,73 @@
-# Architecture
+# Arquitetura
 
-## Overview
+## Visão Geral (Overview)
 
-The system is a layered pipeline. A message flows through deterministic extractors and a single LLM call in parallel, is merged (rules win on regulated fields), reinforced (low confidence → human), validated against a strict contract, and persisted as a versioned artifact. An offline evaluation pipeline judges those artifacts and feeds a dashboard.
+O sistema é estruturado como um pipeline em camadas. Uma mensagem passa por extratores determinísticos e uma única chamada de LLM em paralelo, cujos resultados são mesclados (as regras determinísticas prevalecem sobre campos regulados), passam por uma camada de reforço (baixa confiança → revisão manual), são validados contra um contrato JSON rigoroso e persistidos como artefatos versionados em disco. Um pipeline de avaliação offline julga esses artefatos e alimenta o dashboard.
 
 ```
-Input → [Extractors] ┐
-                     ├→ [Merge] → [Reinforcement] → [Validation] → [Storage] → [Judge] → [Aggregate] → [Dashboard]
-Input → [Classifier] ┘
+Input → [Extratores] ┐
+                     ├→ [Mescla] → [Reforço] → [Validação] → [Armazenamento] → [Juiz] → [Agregação] → [Dashboard]
+Input → [Classificador] ┘
 ```
 
-## Design principles
+## Princípios de Design
 
-1. **Rule/AI separation is physical.** Deterministic logic ([`extractors.py`](../backend/src/triage/extractors.py)) lives in a different module from the LLM call ([`classifier.py`](../backend/src/triage/classifier.py)). The merge layer lets rules *override* the model on regulated fields (CNPJ, urgency).
-2. **One prompt, one response.** A single LLM call returns the whole structured decision. No chains, no agent loop.
-3. **Fail-safe defaults.** Malformed output self-heals via a correction prompt; exhausting retries yields a deterministic "route to a human" fallback. Low confidence always routes to manual review.
-4. **Filesystem storage.** Versioned JSON artifacts, each carrying `schema_version`, behind a small I/O interface.
-5. **Provider-agnostic model access.** The classifier depends on an `LLMProvider` Protocol, never an SDK directly.
+1. **Separação física entre Regras e IA.** A lógica determinística ([`extractors.py`](../backend/src/triage/extractors.py)) vive em um módulo separado da chamada do LLM ([`classifier.py`](../backend/src/triage/classifier.py)). A camada de mesclagem garante que as regras determinísticas *sobreponham* o modelo em campos regulados (CNPJ, urgência).
+2. **Uma única chamada, uma única resposta.** Uma única execução do LLM retorna toda a estrutura de decisão. Não há cadeias de chamadas (chains) ou loops de agente no fluxo principal de classificação.
+3. **Mecanismos de salvaguarda contra falhas (Fail-safe).** Respostas malformadas passam por um loop de auto-correção via prompt de correção. Caso as tentativas se esgotem, retorna-se um fallback determinístico ("encaminhar para análise manual"). Classificações com baixa confiança também são direcionadas para análise humana.
+4. **Armazenamento em sistema de arquivos.** Artefatos JSON versionados, cada um carregando uma `schema_version`, gerenciados por uma interface leve de I/O.
+5. **Acesso portátil a modelos (independente de provedor).** O classificador depende de um protocolo `LLMProvider`, nunca de um SDK diretamente.
 
-## Layer by layer
+## Camada por Camada
 
-- **Extractors** — regex + CNPJ check-digit (modulo 11) validation, BR/relative date parsing, urgency keywords. Pure functions, no LLM, fully unit-tested. This is the audit evidence of rule/AI separation.
-- **Prompts** ([`prompts.py`](../backend/src/triage/prompts.py)) — persona + full taxonomy + decision matrix + few-shot examples ordered least-to-most, no CoT. See [prompt_engineering.md](prompt_engineering.md).
-- **Provider** ([`providers.py`](../backend/src/triage/providers.py)) — `LLMProvider` Protocol + adapters. Includes a decorator `retry_on_transient_error` with exponential backoff and random jitter to handle transient API errors (like 503 Service Unavailable or 429 Rate Limit) automatically across all providers.
-- **Classifier** — orchestrates extractors → prompt → provider call (retry/self-heal) → merge → reinforcement → metadata. Includes a robust substring scanner `_extract_json` that matches curly braces from largest to smallest to isolate and parse the valid JSON object, prioritizing relevant taxonomy keys.
-- **Storage** ([`storage.py`](../backend/evaluation/storage.py)) — `RunRecord`/`EvaluationRecord` I/O; versioned filenames.
-- **Evaluation** — rubric, cross-family judge, aggregator, reporter, CLI runner.
-- **API** ([`api.py`](../backend/src/triage/api.py)) — classification endpoints + dashboard data endpoints. Features asynchronous report processing offloaded to FastAPI `BackgroundTasks` (`POST /reports/run`) and a status query endpoint (`GET /reports/status`) to enable progress pooling on the frontend and prevent gateway timeouts.
-- **Frontend** — a typed view over the same storage the eval pipeline writes to.
+- **Extratores** — validação determinística de CNPJ com dígito verificador (módulo 11), parsing de datas relativas/brasileiras e detecção de palavras-chave de urgência. Funções puras, sem LLM, cobertas por testes unitários.
+- **Prompts** ([`prompts.py`](../backend/src/triage/prompts.py)) — persona, taxonomia completa, matriz de decisão e exemplos few-shot ordenados de menor a maior relevância (recency bias), sem Chain-of-Thought (CoT). Veja mais em [prompt_engineering.md](prompt_engineering.md).
+- **Provedores** ([`providers.py`](../backend/src/triage/providers.py)) — Protocolo `LLMProvider` + adaptadores específicos para cada SDK. Inclui o decorador `retry_on_transient_error` com backoff exponencial e jitter para contornar instabilidades temporárias de rede (como erros 503 e 429).
+- **Classificador** — orquestra extratores → prompts → chamada ao provedor (com tratamento de erro/auto-correção) → mesclagem → reforço de segurança → metadados. Garante o retorno de um `TriageOutput` válido.
+- **Armazenamento** ([`storage.py`](../backend/evaluation/storage.py)) — Entrada e saída para `RunRecord` e `EvaluationRecord` usando arquivos versionados.
+- **Avaliação** — rubrica de pontuação, LLM-as-a-Judge cruzado, agregador de métricas, gerador de relatórios e runner de CLI.
+- **API** ([`api.py`](../backend/src/triage/api.py)) — endpoints para classificação e endpoints de dados para o dashboard. O processamento pesado de relatórios foi delegado ao FastAPI `BackgroundTasks` (`POST /reports/run`) com consulta via `/reports/status` para evitar timeouts de conexões HTTP.
+- **Frontend** — painel React + Vite que lê os dados estruturados agregados pelo backend.
 
-## Model portability — provider abstraction
+## Portabilidade de Modelos — Abstração de Provedor
 
-**Chosen:** a thin `LLMProvider` Protocol with per-SDK adapters selected by `settings.classifier_provider`. Swapping Claude → Gemini is a config change; the classifier and prompts are untouched. This mirrors the storage layer's isolated interface and adds zero framework dependency, keeping the classifier auditable and unit-testable against a fake provider.
+**Escolha:** Foi definida uma interface `LLMProvider` leve, implementada por adaptadores para cada SDK, selecionados via configuração `settings.classifier_provider`. A troca de provedores (ex.: Claude → Gemini) é feita apenas alterando a configuração, mantendo o classificador e os prompts intactos. Isso isola dependências externas e simplifica testes usando fakes.
 
-**Valid model ids per provider** (set in `.env`; swap by config alone):
+**Modelos recomendados por provedor (definidos via `.env`):**
 
-| Role | Provider | Recommended | Alternatives |
+| Função | Provedor | Recomendado | Alternativas |
 |---|---|---|---|
-| Classifier | anthropic | `claude-sonnet-5` (best value) | `claude-opus-4-8` (max accuracy) · `claude-haiku-4-5` (cheapest) |
-| Classifier | gemini | `gemini-2.5-pro` | `gemini-2.5-flash` · `gemini-2.0-flash` |
-| Judge | openai | `gpt-4o` | `gpt-4.1` · `gpt-4-turbo` |
-| Judge | gemini | `gemini-2.5-pro` | `gemini-2.5-flash` |
+| Classificador | anthropic | `claude-sonnet-5` (melhor custo-benefício) | `claude-opus-4-8` (máxima acurácia) · `claude-haiku-4-5` (mais barato) |
+| Classificador | gemini | `gemini-2.5-pro` | `gemini-2.5-flash` · `gemini-2.0-flash` |
+| Juiz (Judge) | openai | `gpt-4o` | `gpt-4.1` · `gpt-4-turbo` |
+| Juiz (Judge) | gemini | `gemini-2.5-pro` | `gemini-2.5-flash` |
 
-The classifier defaults to Sonnet 5 — a triage classifier is high-volume, and Sonnet 5 lands near Opus accuracy at a fraction of the output cost; bump to Opus 4.8 when accuracy outweighs cost. Keep the judge in a **different family** than the classifier (cross-family bias mitigation). Anthropic ids are current as of this writing; OpenAI/Gemini ids evolve — verify against each provider's model list before deploying.
+*Nota:* O classificador usa Sonnet 5 por padrão, unindo acurácia e eficiência de custos. O juiz offline deve ser mantido em uma **família de modelos diferente** da do classificador para mitigar o viés de preferência própria (self-preference bias).
 
-**Alternatives considered** (and when each would win):
+**Justificativa de não escolha de outras abordagens:**
 
-- **Pydantic AI** — model-agnostic, structured-output-native; the natural pick for a Pydantic-first codebase if we wanted typed outputs + provider switching without hand-writing adapters.
-- **Instructor** — patches the provider client to return validated Pydantic models with built-in retry (overlaps our correction loop); multi-provider via LiteLLM.
-- **LiteLLM** — thinnest routing layer, ~100 providers behind one call, plus proxy/fallback/cost tracking. Wins with many providers or dynamic routing.
-- **LangChain** — full orchestration framework. Rejected here (below), but the right tool once the pipeline grows chains, tools, or agents.
+*   **Pydantic AI:** Excelente para projetos orientados a Pydantic, mas escrever adaptadores próprios mantém a aplicação livre de dependências extras e simplifica a auditoria do fluxo de dados.
+*   **Instructor:** Facilita retornos estruturados e retentativas, mas sobrepõe-se ao nosso fluxo customizado de correção/auto-cura e introduz complexidade ao alternar provedores (via LiteLLM).
+*   **LiteLLM:** Recomendado para roteamento dinâmico entre dezenas de provedores, mas desnecessário para o escopo inicial focado em poucos provedores fixos.
+*   **LangChain:** Framework robusto de orquestração, porém introduz abstrações complexas desnecessárias para uma aplicação que realiza apenas uma única chamada estruturada ao LLM.
 
-## Techniques rejected
+## Tecnologias e Técnicas Não Selecionadas e Justificativas
 
-- **LangChain** — abstractions we don't need for a single call, at the cost of auditability.
-- **Classical RAG** — the taxonomy is small and fixed; it fits in the system prompt.
-- **BERT fine-tuning** — no labeled dataset; and RA-ICL can match fine-tuned encoders on intent classification (Khrapunova 2025).
-- **Full constrained decoding** — the "constraint tax": reasoning degrades with format rigor (Tam et al. 2024). We use Format-Restricting Instructions + retry instead.
-- **Chain-of-Thought in classification** — didn't help empirically (Khrapunova 2025). CoT is reserved for the judge.
-- **Runtime LLM-as-Judge** — redundant with the deterministic safeguards and adds latency; evaluation is offline.
-- **Self-consistency** — `temperature=0` makes sampling-based voting moot.
-- **Database** — over-dimensioned for dozens of records; JSON artifacts are git-diffable audit evidence.
+*   **Bancos de Dados Relacionais/NoSQL:** Desnecessários para o volume inicial de dezenas de registros. Arquivos JSON em disco são de leitura simples, servem como trilha de auditoria e podem ser facilmente versionados e visualizados via `git diff`.
+*   **Ajuste Fino (Fine-tuning) de Modelos:** Requer um conjunto volumoso de dados rotulados. Técnicas de Few-Shot In-Context Learning (RA-ICL) trazem resultados comparáveis a custo de engenharia muito menor (Khrapunova 2025).
+*   **Decodificação Totalmente Restringida (Grammar/Constrained Decoding):** Evitamos devido ao "imposto de restrição" (Tam et al. 2024), onde limitar rigidamente os tokens na saída degrada a capacidade de raciocínio do modelo. Preferimos instruções claras de formato (FRI) + auto-correção via código.
+*   **Chain-of-Thought (CoT) na Classificação:** Não trouxe ganho empírico significativo para a tarefa de triagem direta (Khrapunova 2025), além de aumentar custos e latência. O CoT foi reservado exclusivamente para o Juiz offline (onde a tomada de decisão exige raciocínio detalhado).
+*   **Juiz LLM Executado em Tempo de Execução (Runtime Judge):** Adicionaria latência crítica ao cliente final. A avaliação e cálculo da rubrica ocorrem em lote assíncrono offline.
 
 ## LGPD / PII
 
-Messages carry business PII (CNPJ, company names). The system never logs raw message content — structured logs emit only ids, trace ids, lengths, and timing. Artifacts persist the message (needed for auditability and evaluation) on the local filesystem behind the storage interface; a production deployment would add retention limits and access control at that boundary.
+Mensagens de clientes corporativos podem conter dados sensíveis (CNPJ, nomes de empresas, telefones). Para manter a conformidade com a LGPD:
+*   Os logs estruturados do sistema nunca emitem o conteúdo bruto da mensagem, apenas IDs, comprimentos de texto e tempo de latência.
+*   Os dados brutos persistem somente no sistema de arquivos local (`storage/`), permitindo aplicar controle de acesso rígido e políticas automáticas de expiração de dados a nível de infraestrutura de disco.
 
-## Next steps (with quantitative triggers)
+## Próximos Passos (Gatilhos Quantitativos)
 
-- **CI pipeline** (lint/tests/docker build) once the repo has collaborators or merge traffic.
-- **Human-labeled gold set** (~20–50 to start) to report real accuracy and validate the judge itself.
-- **RA-ICL** when ~500–1000 reviewed classifications are available.
-- **Fine-tuned encoder** when volume/latency justify the training + serving cost.
-- **Conditional LLM-as-Judge** for medium-confidence cases in production.
-- **Storage migration** to an event log / warehouse when concurrent writers or analytical queries emerge — isolated to the storage interface.
-
-## References
-
-Khrapunova 2025; Vatsal & Dubey 2024; Tam et al. 2024; Zheng et al. 2023 — see the [root README](../README.md#references).
+*   **Pipeline de CI:** Configurar lint/testes/build assim que houver colaboração de outros desenvolvedores ou aumento de tráfego de commits.
+*   **Gold Set com Rotulagem Humana:** Criar um conjunto de referência (~20–50 amostras) para reportar acurácia real e calibrar a acurácia do Juiz LLM.
+*   **RA-ICL:** Introduzir busca por similaridade de exemplos assim que acumularmos entre 500 e 1000 classificações validadas por humanos.
+*   **Encoder Ajustado Localmente:** Considerar fine-tuning se o volume de requisições e a exigência de latência abaixo de 100ms justificarem o custo operacional.
